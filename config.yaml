@@ -1,0 +1,10 @@
+window: # 投票窗口信息（普通用户无需修改）
+  class: TXGuiFoundation # 窗口类名
+  title: 投票 # 窗口标题
+vote: # 投票设置
+  wait: 1.5 # 一些操作后等待的时间，如进入投票详情页，提交投票。可以根据自身网络状况调整
+  interval: 5 # 检查是否有未参加投票的间隔时间
+  radio: 1 # 单选投票选则的选项，最小值为 1。如果大于投票选项数量，改为选择最后一个选项
+  checkbox: [1, 2] # 多选投票选则的选项，每个值的最小值为 1。如果大于投票选项数量，改为选择最后一个选项
+log: #日志设置
+  level: DEBUG # 日志等级，可以填以下值: NOTSET(不显示日志), DEBUG, INFO, WARNING, ERROR, CRITICAL

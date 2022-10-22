@@ -1,0 +1,4 @@
+colorlog==6.7.0
+PyAutoGUI==0.9.53
+pywin32==304
+Pillow==9.2.0

@@ -1,4 +1,6 @@
 import logging
+import math
+import threading
 import time
 import yaml
 import win32gui
@@ -8,7 +10,7 @@ from log import Log
 
 SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
 config = {}
-log = None
+log: Log = None
 
 
 def load_config():
@@ -35,15 +37,84 @@ def getY(percent):
     return int(SCREEN_HEIGHT * percent)
 
 
-def getWindowInfo(className, title):
+def getInviteSignInWindowRect(className) -> tuple[int, int, int, int]:
     """
-    获取投票窗口的信息
+    获取“邀请您使用签到”弹窗的位置
+    """
+    list = []
+
+    def callback(hwnd, _param):
+        if win32gui.GetClassName(hwnd) == className and win32gui.GetWindowTextLength(hwnd) == 0 and win32gui.IsWindowVisible(hwnd):
+            left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+            width = right - left
+            height = bottom - top
+            if 0 < left < SCREEN_WIDTH and 0 < top < SCREEN_HEIGHT and math.isclose(width / height, 2.5530303, abs_tol=0.1):
+                list.append((left, top, right, bottom))
+
+    win32gui.EnumWindows(callback, 0)
+    list_len = len(list)
+    if list_len == 1:
+        return list[0]
+    elif (list_len == 0):
+        log.debug('暂无“邀请您使用签到”弹窗')
+        return -1, -1, -1, -1
+    else:
+        log.error(f'找到{list_len}个疑似符合要求的“邀请您使用签到”弹窗，请向开发者反馈！')
+        return -1, -1, -1, -1
+
+
+def getSignInWindowRect(className) -> tuple[int, int, int, int]:
+    """
+    获取签到窗口的位置
+    """
+    list = []
+
+    def callback(hwnd, _param):
+        if win32gui.GetClassName(hwnd) == className and win32gui.GetWindowTextLength(hwnd) == 0 and win32gui.IsWindowVisible(hwnd):
+            left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+            width = right - left
+            height = bottom - top
+            if 0 < left < SCREEN_WIDTH and 0 < top < SCREEN_HEIGHT and math.isclose(width / height, 1.2454545, abs_tol=0.1):
+                list.append((left, top, right, bottom))
+
+    win32gui.EnumWindows(callback, 0)
+    list_len = len(list)
+    if list_len == 1:
+        return list[0]
+    elif (list_len == 0):
+        log.error('未找到签到窗口！')
+        return -1, -1, -1, -1
+    else:
+        log.error(f'找到{list_len}个疑似符合要求的签到窗口，请向开发者反馈！')
+        return -1, -1, -1, -1
+
+
+def getVoteWindowRect(className, title):
+    """
+    获取投票窗口的位置
     """
     handle = win32gui.FindWindow(className, title)
     if handle == 0:
         log.warning('未找到投票窗口')
         return -1, -1, -1, -1
     return win32gui.GetWindowRect(handle)
+
+
+def clickOpenAppButton(region):
+    """
+    点击“打开应用”按钮
+    """
+    pyautogui.click(region[0] + region[2] * 0.7655786, region[1] + region[3] * 0.7272727)
+
+
+def clickSigninButton(region):
+    """
+    点击“点击签到”按钮
+    """
+    box = pyautogui.locateOnScreen('./pic/blue_pixel.png', region=region)
+    if box is None:
+        return log.error("无法找到【点击签到】按钮")
+    return pyautogui.click(box.left + getX(0.005859375), box.top + getY(0.01041667))
 
 
 def getAttendLabelPosition(region):
@@ -82,7 +153,7 @@ def getVoteEndLabelPosition(region):
     """
     获取“已结束”图标左上角的坐标
     """
-    return pyautogui.locateCenterOnScreen('./pic/已结束.png', region=region)
+    return pyautogui.locateOnScreen('./pic/已结束.png', region=region)
 
 
 def isVoteEnd(region):
@@ -139,18 +210,13 @@ def vote(position: Box, left_region, bottom_region, scroll_point):
     pyautogui.click(getBackToListCenterPosition(bottom_region))  # 点击返回列表
 
 
-def main():
-    load_config()
-    log.debug(f'分辨率：{SCREEN_WIDTH}×{SCREEN_HEIGHT}')
-    log.debug(f'配置：{config}')
-    log.info('请打开腾讯会议的投票窗口，5秒后开始自动投票')
-    time.sleep(5)
+def task_vote():
     while True:
-        left, top, right, bottom = getWindowInfo(config['window']['class'], config['window']['title'])
+        left, top, right, bottom = getVoteWindowRect('TXGuiFoundation', '投票')
         if left > -1:
             width = right - left  # 窗口宽度
             height = bottom - top  # 窗口高度
-            left_region = (left, top, int(width * 0.2), bottom - top)  # 窗口左侧 1/4 区域
+            left_region = (left, top, int(width * 0.2), height)  # 窗口左侧 1/4 区域
             position = getAttendLabelPosition(left_region)
             if position is not None and not isVoteEnd((position.left + getX(0.1359375), position.top - getY(0.025), getX(0.02421875), getY(0.01805556))):
                 bottom_region = (left, int(top + height * 0.8), width, int(height * 0.2))  # 窗口底部 1/4 区域
@@ -161,8 +227,39 @@ def main():
         time.sleep(config['vote']['interval'])
 
 
+def task_signin():
+    while True:
+        left, top, right, bottom = getInviteSignInWindowRect('TXGuiFoundation')
+        if left > -1:
+            region = (left, top, right - left, bottom - top)
+            clickOpenAppButton(region)
+            time.sleep(config['signin']['interval'])
+            left, top, right, bottom = getSignInWindowRect('TXGuiFoundation')
+            region = (left, top, right - left, bottom - top)
+            clickSigninButton(region)
+        time.sleep(config['signin']['interval'])
+
+
+def wait_for_quit():
+    while True:
+        input()
+
+
+def main():
+    load_config()
+    log.debug(f'分辨率：{SCREEN_WIDTH}×{SCREEN_HEIGHT}')
+    log.debug(f'配置：{config}')
+    log.info('5秒后开始运行')
+    time.sleep(5)
+    if config['vote']['enable']:
+        threading.Thread(name='vote', target=task_vote, daemon=True).start()
+    if config['signin']['enable']:
+        threading.Thread(name='signin', target=task_signin, daemon=True).start()
+    wait_for_quit()
+
+
 if __name__ == '__main__':
     try:
         main()
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         print('Exit')

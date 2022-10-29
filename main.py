@@ -29,12 +29,12 @@ def locateAllCenterOnScreen(image, **kwargs):
     return [center(box) for box in pyautogui.locateAllOnScreen(image, **kwargs)]
 
 
-def getX(percent):
-    return int(SCREEN_WIDTH * percent)
+def getX(percent, width=SCREEN_WIDTH, base=0):
+    return int(width * percent + base)
 
 
-def getY(percent):
-    return int(SCREEN_HEIGHT * percent)
+def getY(percent, height=SCREEN_HEIGHT, base=0):
+    return int(height * percent + base)
 
 
 def getInviteSignInWindowRect(className) -> tuple[int, int, int, int]:
@@ -104,7 +104,7 @@ def clickOpenAppButton(region):
     """
     点击“打开应用”按钮
     """
-    pyautogui.click(region[0] + region[2] * 0.7655786, region[1] + region[3] * 0.7272727)
+    pyautogui.click(getX(0.7655786, region[2], region[0]), getY(0.7272727, region[3], region[1]))
 
 
 def clickSigninButton(region):
@@ -114,7 +114,7 @@ def clickSigninButton(region):
     box = pyautogui.locateOnScreen('./pic/blue_pixel.png', region=region)
     if box is None:
         return log.error("无法找到【点击签到】按钮")
-    return pyautogui.click(box.left + getX(0.005859375), box.top + getY(0.01041667))
+    return pyautogui.click(getX(0.005859375, base=box.left), getY(0.01041667, base=box.top))
 
 
 def getAttendLabelPosition(region):
@@ -179,7 +179,7 @@ def vote(position: Box, left_region, bottom_region, scroll_point):
     投票
     """
     label_left, label_top = position.left, position.top
-    pyautogui.click(label_left + getX(0.0078125), label_top - getY(0.01388889))  # 进入投票详情页
+    pyautogui.click(getX(0.0078125, base=label_left),  getY(-0.01388889, base=label_top))  # 进入投票详情页
     time.sleep(config['vote']['wait'])
     pyautogui.moveTo(scroll_point)
     time.sleep(0.5)
@@ -216,9 +216,10 @@ def task_vote():
         if left > -1:
             width = right - left  # 窗口宽度
             height = bottom - top  # 窗口高度
-            left_region = (left, top, int(width * 0.2), height)  # 窗口左侧 1/4 区域
+            left_region = (left, top, int(width * 0.2), height)  # 窗口左侧 1/4 区域 
             position = getAttendLabelPosition(left_region)
-            if position is not None and not isVoteEnd((position.left + getX(0.1359375), position.top - getY(0.025), getX(0.02421875), getY(0.01805556))):
+            if position is not None and not isVoteEnd((getX(0.6, width, left), getY(-0.078740157, height, position.top), width * 0.4, getY(0.078740157480315, height))):
+                log.debug('发现可参加的投票')
                 bottom_region = (left, int(top + height * 0.8), width, int(height * 0.2))  # 窗口底部 1/4 区域
                 scroll_point = (position.left, int(top + 0.5 * height))  # 鼠标滚轮下滑位置
                 vote(position, left_region, bottom_region, scroll_point)
@@ -231,6 +232,7 @@ def task_signin():
     while True:
         left, top, right, bottom = getInviteSignInWindowRect('TXGuiFoundation')
         if left > -1:
+            log.debug('发现“xxx邀请您使用签到”')
             region = (left, top, right - left, bottom - top)
             clickOpenAppButton(region)
             time.sleep(config['signin']['interval'])

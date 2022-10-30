@@ -22,7 +22,12 @@ git clone https://github.com/andywang425/TencentMeetingHelper.git
 pip install -r requirements.txt
 ```
 
-3. 打开配置文件`config.yaml`，根据需要修改配置。
+3. 将配置文件样例`config.example.yaml`重命名为`config.yaml`，根据需要修改配置。
+
+```
+mv config.example.yaml config.yaml
+notepad config.yaml
+```
 
 4. 运行
 
@@ -58,9 +63,9 @@ python main.py
 
 ## 更新计划
 
-- 支持多个问题的投票
+- 支持多个问题的投票（暂时没什么好的思路）
 - 优化自动签到
-- 优化图像识别在低分辨率机器上的表现。
+- 优化图像识别在低分辨率机器上的表现
 
 ## 许可证
 

@@ -111,17 +111,14 @@ def clickSigninButton(region):
     """
     点击“点击签到”按钮
     """
-    box = pyautogui.locateOnScreen('./pic/blue_pixel.png', region=region)
-    if box is None:
-        return log.error("无法找到【点击签到】按钮")
-    return pyautogui.click(getX(0.005859375, base=box.left), getY(0.01041667, base=box.top))
+    return pyautogui.click(getX(0.497810219, region[2], region[0]), getY(0.7, region[3], region[1]))
 
 
 def getAttendLabelPosition(region):
     """
     获取“未参与”图标左上角的坐标
     """
-    return pyautogui.locateOnScreen('./pic/未参与.png', region=region)
+    return pyautogui.locateOnScreen('./pic/noAttend.png', region=region, confidence=0.8, grayscale=True)
 
 
 def getButtonCenterPostion(region):
@@ -139,21 +136,21 @@ def getRadioCenterPosition(region):
     """
     获取单选按钮中心的坐标
     """
-    return locateAllCenterOnScreen('./pic/radio.png', region=region)
+    return locateAllCenterOnScreen('./pic/radio.png', region=region, confidence=0.9, grayscale=True)
 
 
 def getCheckBoxCenterPosition(region):
     """
     获取多选按钮中心的坐标
     """
-    return locateAllCenterOnScreen('./pic/checkbox.png', region=region)
+    return locateAllCenterOnScreen('./pic/checkbox.png', region=region, confidence=0.9, grayscale=True)
 
 
 def getVoteEndLabelPosition(region):
     """
     获取“已结束”图标左上角的坐标
     """
-    return pyautogui.locateOnScreen('./pic/已结束.png', region=region)
+    return pyautogui.locateOnScreen('./pic/isEnd.png', region=region, confidence=0.8, grayscale=True)
 
 
 def isVoteEnd(region):
@@ -164,14 +161,14 @@ def getBackToListCenterPosition(region):
     """
     获取“返回列表”按钮中心的坐标
     """
-    return pyautogui.locateCenterOnScreen('./pic/返回列表.png', region=region)
+    return pyautogui.locateCenterOnScreen('./pic/back2list.png', region=region, grayscale=True)
 
 
 def getSubmitCenterPosition(region):
     """
     获取“提交”按钮中心的坐标
     """
-    return pyautogui.locateCenterOnScreen('./pic/提交.png', region=region)
+    return pyautogui.locateCenterOnScreen('./pic/submit.png', region=region, grayscale=True)
 
 
 def vote(position: Box, left_region, bottom_region, scroll_point):
@@ -216,9 +213,9 @@ def task_vote():
         if left > -1:
             width = right - left  # 窗口宽度
             height = bottom - top  # 窗口高度
-            left_region = (left, top, int(width * 0.2), height)  # 窗口左侧 1/4 区域 
+            left_region = (left, top, int(width * 0.2), height)  # 窗口左侧 1/4 区域
             position = getAttendLabelPosition(left_region)
-            if position is not None and not isVoteEnd((getX(0.6, width, left), getY(-0.078740157, height, position.top), width * 0.4, getY(0.078740157480315, height))):
+            if position is not None and not isVoteEnd((getX(0.6, width, left), getY(-0.078740157, height, position.top), int(width * 0.4), getY(0.078740157480315, height))):
                 log.debug('发现可参加的投票')
                 bottom_region = (left, int(top + height * 0.8), width, int(height * 0.2))  # 窗口底部 1/4 区域
                 scroll_point = (position.left, int(top + 0.5 * height))  # 鼠标滚轮下滑位置
@@ -234,6 +231,7 @@ def task_signin():
         if left > -1:
             log.debug('发现“xxx邀请您使用签到”')
             region = (left, top, right - left, bottom - top)
+            time.sleep(0.5)  # 防止弹窗仍在弹出的过程中
             clickOpenAppButton(region)
             time.sleep(config['signin']['interval'])
             left, top, right, bottom = getSignInWindowRect('TXGuiFoundation')

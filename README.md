@@ -5,35 +5,43 @@
 ## 环境要求
 
 - Windows
-- Python 3.6+
 - 显示器的分辨率比例为 16:9 且分别率至少为 1920×1080
 
 ## 安装
 
-1. Clone 本项目
+前往本项目的[Releases](https://github.com/andywang425/TencentMeetingHelper/releases)，下载最新版的压缩包`TencentMeetingHelper.7z`并解压。
+打开`config.yaml`，根据需要修改配置。最后双击`TencentMeetingHelper.exe`即可运行。
+
+<details>
+<summary>从源代码安装</summary>
+
+1. 环境要求：Python 3.6+
+
+2. Clone 本项目
 
 ```
 git clone https://github.com/andywang425/TencentMeetingHelper.git
 ```
 
-2. 安装依赖
+3. 安装依赖
 
 ```
 pip install -r requirements.txt
 ```
 
-3. 将配置文件样例`config.example.yaml`复制并重命名为`config.yaml`，根据需要修改配置。
+4. 将配置文件样例`config.example.yaml`复制并重命名为`config.yaml`，根据需要修改配置。
 
 ```
-copy config.example.yaml config.yaml
-start config.yaml
+copy config.example.yaml config.yaml | start config.yaml
 ```
 
-4. 运行
+5. 运行
 
 ```
 python main.py
 ```
+
+</details>
 
 ## 使用说明
 

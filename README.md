@@ -9,7 +9,7 @@
 
 ## 安装
 
-前往[Releases](https://github.com/andywang425/TencentMeetingHelper/releases/latest)，下载最新版的压缩包`TencentMeetingHelper.7z`并解压。
+前往[Release](https://github.com/andywang425/TencentMeetingHelper/releases/latest)，下载压缩包`TencentMeetingHelper.7z`并解压。
 打开`config.yaml`，根据需要修改配置。最后双击`TencentMeetingHelper.exe`即可运行。
 
 <details>

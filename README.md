@@ -22,11 +22,11 @@ git clone https://github.com/andywang425/TencentMeetingHelper.git
 pip install -r requirements.txt
 ```
 
-3. 将配置文件样例`config.example.yaml`重命名为`config.yaml`，根据需要修改配置。
+3. 将配置文件样例`config.example.yaml`复制并重命名为`config.yaml`，根据需要修改配置。
 
 ```
-mv config.example.yaml config.yaml
-notepad config.yaml
+copy config.example.yaml config.yaml
+start config.yaml
 ```
 
 4. 运行

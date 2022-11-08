@@ -10,15 +10,19 @@ from log import Log
 
 SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
 config = {}
-log: Log = None
+log = Log(name='temp')
 
 
 def load_config():
-    with open('./config.yaml', encoding="utf-8") as f:
-        global config, log
-        config = yaml.safe_load(f.read())
-        config['vote']['checkbox'].sort()
-        log = Log(name='vote', log_level=logging._nameToLevel[config['log']['level']])
+    try:
+        with open('./config.yaml', encoding="utf-8") as f:
+            global config, log
+            config = yaml.safe_load(f.read())
+            config['vote']['checkbox'].sort()
+            log = Log(name='vote', log_level=logging._nameToLevel[config['log']['level']])
+    except IOError:
+        log.critical("无法打开配置文件config.yaml")
+        exit(-1)
 
 
 def center(box):

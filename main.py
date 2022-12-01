@@ -11,6 +11,10 @@ from log import Log
 SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
 config = {}
 log = Log(name='temp')
+handle = {
+    "signin": -1,
+    "vote": -1
+}
 
 
 def load_config():
@@ -67,41 +71,38 @@ def getInviteSignInWindowRect(className) -> tuple[int, int, int, int]:
         return -1, -1, -1, -1
 
 
-def getSignInWindowRect(className) -> tuple[int, int, int, int]:
+def getSignInWindowRect(className, title):
     """
     获取签到窗口的位置
     """
-    list = []
-
-    def callback(hwnd, _param):
-        if win32gui.GetClassName(hwnd) == className and win32gui.GetWindowTextLength(hwnd) == 0 and win32gui.IsWindowVisible(hwnd):
-            left, top, right, bottom = win32gui.GetWindowRect(hwnd)
-            width = right - left
-            height = bottom - top
-            if 0 < left < SCREEN_WIDTH and 0 < top < SCREEN_HEIGHT and math.isclose(width / height, 1.2454545, abs_tol=0.1):
-                list.append((left, top, right, bottom))
-
-    win32gui.EnumWindows(callback, 0)
-    list_len = len(list)
-    if list_len == 1:
-        return list[0]
-    elif (list_len == 0):
-        log.error('未找到签到窗口！')
+    global handle
+    if handle["signin"] != -1:
+        try:
+            return win32gui.GetWindowRect(handle["signin"])
+        except:
+            handle["signin"] = -1
+    handle["signin"] = win32gui.FindWindow(className, title)
+    if handle["signin"] == 0:
+        log.warning('未找到签到窗口')
         return -1, -1, -1, -1
-    else:
-        log.error(f'找到{list_len}个疑似符合要求的签到窗口，请向开发者反馈！')
-        return -1, -1, -1, -1
+    return win32gui.GetWindowRect(handle["signin"])
 
 
 def getVoteWindowRect(className, title):
     """
     获取投票窗口的位置
     """
-    handle = win32gui.FindWindow(className, title)
-    if handle == 0:
+    global handle
+    if handle["vote"] != -1:
+        try:
+            return win32gui.GetWindowRect(handle["vote"])
+        except:
+            handle["vote"] = -1
+    handle["vote"] = win32gui.FindWindow(className, title)
+    if handle["vote"] == 0:
         log.warning('未找到投票窗口')
         return -1, -1, -1, -1
-    return win32gui.GetWindowRect(handle)
+    return win32gui.GetWindowRect(handle["vote"])
 
 
 def clickOpenAppButton(region):
@@ -115,7 +116,7 @@ def clickSigninButton(region):
     """
     点击“点击签到”按钮
     """
-    return pyautogui.click(getX(0.497810219, region[2], region[0]), getY(0.7, region[3], region[1]))
+    return pyautogui.click(getX(0.5, region[2], region[0]), getY(0.63924, region[3], region[1]))
 
 
 def getAttendLabelPosition(region):
@@ -238,9 +239,10 @@ def task_signin():
             time.sleep(0.5)  # 防止弹窗仍在弹出的过程中
             clickOpenAppButton(region)
             time.sleep(config['signin']['interval'])
-            left, top, right, bottom = getSignInWindowRect('TXGuiFoundation')
-            region = (left, top, right - left, bottom - top)
-            clickSigninButton(region)
+            left, top, right, bottom = getSignInWindowRect('TXGuiFoundation', '签到')
+            if left > -1:
+                region = (left, top, right - left, bottom - top)
+                clickSigninButton(region)
         time.sleep(config['signin']['interval'])
 
 

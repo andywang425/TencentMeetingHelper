@@ -1,4 +1,4 @@
-if exist dist (del /f /s /q dist)
+if exist dist (rd /s /q dist)
 :: 需安装 pyinstaller: pip install -U pyinstaller
 pyinstaller -F -c --distpath .\dist\TencentMeetingHelper -n TencentMeetingHelper main.py
 copy config.example.yaml .\dist\TencentMeetingHelper\config.yaml

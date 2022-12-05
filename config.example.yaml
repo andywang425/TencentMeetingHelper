@@ -12,5 +12,5 @@ signin: #签到设置
   interval: 10 # 检查是否有未参加签到的间隔时间
 log: #日志设置
   level: DEBUG # 日志等级，可以填以下值: NOTSET(不显示日志), DEBUG, INFO, WARNING, ERROR, CRITICAL
-  save2file: true # 是否将日志记录到文件中
+  save2file: false # 是否将日志记录到文件中
   path: ./log/{DATE}-log.txt # 日志文件的保存路径，相对路径或绝对路径皆可。{DATE}是日期变量，程序写日志时会将其替换为具体日期，如2022-12-05

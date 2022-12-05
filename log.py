@@ -31,7 +31,7 @@ class Log:
         # 输出到文件
         if (save2file):
             file_formatter = logging.Formatter(fmt=file_fmt, datefmt=file_date_fmt)
-            newPath = path.replace('{DATE}', datetime.now().strftime('%Y-%M-%d'))
+            newPath = path.replace('{DATE}', datetime.now().strftime('%y-%m-%d'))
             dir = os.path.dirname(newPath)
             if not os.path.exists(dir):
                 os.makedirs(dir)

@@ -18,15 +18,12 @@ handle = {
 
 
 def load_config():
-    try:
-        with open('./config.yaml', encoding="utf-8") as f:
-            global config, log
-            config = yaml.safe_load(f.read())
-            config['vote']['checkbox'].sort()
-            log = Log(name='vote', log_level=logging._nameToLevel[config['log']['level']])
-    except IOError:
-        log.critical("无法打开配置文件config.yaml")
-        exit(-1)
+    with open('./config.yaml', encoding="utf-8") as f:
+        global config, log
+        config = yaml.safe_load(f.read())
+        config['vote']['checkbox'].sort()
+        log = Log(name='vote', log_level=logging._nameToLevel[config['log']['level']],
+                  save2file=config['log']['save2file'], path=config['log']['path'])
 
 
 def center(box):
@@ -221,10 +218,11 @@ def task_vote():
             left_region = (left, top, int(width * 0.2), height)  # 窗口左侧 1/4 区域
             position = getAttendLabelPosition(left_region)
             if position is not None and not isVoteEnd((getX(0.6, width, left), getY(-0.078740157, height, position.top), int(width * 0.4), getY(0.078740157480315, height))):
-                log.debug('发现可参加的投票')
+                log.info('发现可参加的投票')
                 bottom_region = (left, int(top + height * 0.8), width, int(height * 0.2))  # 窗口底部 1/4 区域
                 scroll_point = (position.left, int(top + 0.5 * height))  # 鼠标滚轮下滑位置
                 vote(position, left_region, bottom_region, scroll_point)
+                log.info('投票完成')
             else:
                 log.debug('暂无未投票的投票')
         time.sleep(config['vote']['interval'])
@@ -234,7 +232,7 @@ def task_signin():
     while True:
         left, top, right, bottom = getInviteSignInWindowRect('TXGuiFoundation')
         if left > -1:
-            log.debug('发现“xxx邀请您使用签到”')
+            log.info('发现“xxx邀请您使用签到”')
             region = (left, top, right - left, bottom - top)
             time.sleep(0.5)  # 防止弹窗仍在弹出的过程中
             clickOpenAppButton(region)
@@ -243,6 +241,7 @@ def task_signin():
             if left > -1:
                 region = (left, top, right - left, bottom - top)
                 clickSigninButton(region)
+                log.info('签到完成')
         time.sleep(config['signin']['interval'])
 
 
@@ -269,3 +268,5 @@ if __name__ == '__main__':
         main()
     except (KeyboardInterrupt, EOFError):
         print('Exit')
+    except Exception as e:
+        log.critical(e)
